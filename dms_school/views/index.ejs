@@ -1,0 +1,219 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Student Information</title>
+      <link rel="stylesheet" href="finalp.css">
+    </head>
+    <body>
+      <div class="container">
+        <h2>The East African University(TEAU)</h2>
+        <div class="search-container">
+          <input type="text" placeholder="Search..." id="search-bar">
+          <button type="button" id="search-btn" style="background-color: #0069d9;">Search</button>
+        </div>
+        <button type="button" id="add-btn" style="background-color: blueviolet;">Add</button>
+        <button type="button" id="save-btn" style="display:none"style="background-color:blue">Save</button>
+        <table id="student-table">
+          <thead>
+            <tr>
+              <th>NO</th>
+              <th>STUDENT'S NAME</th>
+              <th>ADM_NUMBER</th>
+              <th>YEAR OF STUDY</th>
+              <th>PROGRAM</th>
+              <th>EMAIL ADDRESS</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <% for(let i =0 ; i < data.length ; i++){ %>
+            <tr>
+              <td><%= i+1 %></td>
+              <td><%= data[i].STUDENTSNAME %></td>
+              <td><%= data[i].ADM_NUMBER %></td>
+              <td><%= data[i].YEAROFSTUDY %></td>
+              <td><%= data[i].PROGRAM %></td>
+              <td><%= data[i].EMAIL_ADDRESS %></td>
+              <td>
+                <button class="edit-btn" onclick="edit(this)" style="color:blue">Edit</button>
+                <button class="delete-btn" onclick="del(this)" style="color: red">Delete</button>
+              </td>        
+            </tr>
+            <% } %>
+           </tbody>
+        </table>
+    
+      </div>
+      <div class="modal" id="modal">
+        <div class="modal-content">
+          <h2 id="modal-title">Add New Student</h2>
+          <form id="add-form">
+           <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="adm">Admission Number:</label>
+            <input type="text" id="adm" name="adm" required>
+            <label for="year">Year of Study:</label>
+            <input type="number" id="year" name="year" required>
+            <label for="program">Program:</label>
+            <input type="text" id="program" name="program" required>
+            <label for="email">Email:</label> 
+            <input type="email" id="email" name="email" required>
+            <button type="button" id="add-student-btn">Add Student</button>
+            <button type="button" id="close-btn">Close</button>
+          </form>
+        </div>
+      </div> 
+      <script>
+        // Get the search input and button elements
+    const searchInput = document.getElementById("search-bar");
+    const searchButton = document.getElementById("search-btn");
+    let url,data = {name :"",adm :"",year :"",program :"",email :""},
+    arr = ['name','adm','year','program','email'];
+    
+    // Add an event listener to the search button
+    searchButton.addEventListener("click", () => {
+      // Get the table body element
+      const tableBody = document.getElementById("table-body");
+      // Get the search query
+      const query = searchInput.value.toLowerCase();
+      // Loop through the table rows and search for the query
+      for (let i = 0; i < tableBody.rows.length; i++) {
+        const row = tableBody.rows[i];
+        const rowData = row.innerHTML.toLowerCase();
+        // If the query is found in the row data, select the row and break out of the loop
+        if (rowData.includes(query)) {
+          row.style.backgroundColor = "blue";
+        } 
+        // else {
+        //   row.style.backgroundColor = "white";
+        // }
+      }
+    });
+    
+    
+    // Get necessary elements
+    const addButton = document.getElementById("add-btn");
+    const saveButton = document.getElementById("save-btn");
+    const tableBody = document.getElementById("table-body");
+    const modal = document.getElementById("modal");
+    const closeModalButton = document.getElementById("close-btn");
+    const addStudentButton = document.getElementById("add-student-btn");
+    const editButtons = document.getElementsByClassName("edit-btn");
+    const deleteButtons = document.getElementsByClassName("delete-btn");
+    
+    // Initialize counter for student number
+    let counter = document.querySelectorAll("tr").length;
+    // Open modal on Add button click
+    addButton.addEventListener("click", () => {
+      modal.style.display = "block";
+      });
+      
+      // Close modal on Close button click
+      closeModalButton.addEventListener("click", () => {
+      modal.style.display = "none";
+      });
+      
+      // Add student to table on Add Student button click
+      addStudentButton.addEventListener("click", () => {
+      const name = document.getElementById("name").value;data.name = name;
+      const adm = document.getElementById("adm").value;data.adm = adm;
+      const year = document.getElementById("year").value;data.year =year;
+      const program = document.getElementById("program").value;data.program = program;
+      const email = document.getElementById("email").value;data.email = email;
+      url = "/add"
+      updateChanges(data,url)
+      // Create new table row and populate with student information
+    const newRow = document.createElement("tr");
+    newRow.innerHTML = `<td>${counter}</td> <td>${name}</td> <td>${adm}</td> <td>${year}</td> <td>${program}</td> <td>${email}</td> <td> <button class="edit-btn" onclick='edit(this)'>Edit</button> <button class="delete-btn" onclick = 'del(this)'>Delete</button> </td>`;
+    
+      // Increment student number counter
+      counter++;
+      
+      // Add new row to table body
+      tableBody.appendChild(newRow);
+      
+      // Clear form fields
+      document.getElementById("add-form").reset();
+      
+      // Close modal
+      modal.style.display = "none"; 
+      
+      // Add event listeners to new row's Edit and Delete buttons  
+      });
+      
+      // Function to handle editing a student's information
+      function edit(obj) {
+      const row = obj.parentNode.parentNode;
+      obj.innerHTML = "Save";
+      obj.setAttribute("onclick","saveStudent(this)");
+      // Make row's cells editable
+      for (let i = 1; i <= 5; i++) {
+        row.children[i].contentEditable = true;
+        row.children[i].style.backgroundColor = "white";
+      }
+      }
+      
+      // Function to handle saving a student's information after editing
+      function saveStudent(obj) {
+      const row = obj.parentNode.parentNode;
+      obj.innerHTML = "Edit";
+      obj.setAttribute("onclick","edit(this)");
+      url = "/edit";
+      // Make row's cells non-editable
+      for (let i = 1; i <= 5; i++) {
+        data[arr[i-1]] = row.children[i].innerHTML;
+        row.children[i].contentEditable = false;
+        row.children[i].style.backgroundColor = "initial"
+     }
+      updateChanges(data,url)
+      }
+      
+      // Function to handle deleting a student's information
+      function del(obj) {
+      if(confirm("Do you want to delete??")){
+        //press ok
+        alert("You clicked OK")
+      }
+      else{
+        alert("You clicked cancel")
+      }
+      const row = obj.parentNode.parentNode;
+      tableBody.removeChild(row);
+      url = "/del"
+      let data = row.children[2].innerHTML;
+      updateChanges(data,url)
+      }
+    // Add functionality to Add button
+    addButton.addEventListener("click", () => {
+      modal.style.display = "block";
+      });
+      
+      // Add functionality to Close button
+      closeModalButton.addEventListener("click", () => {
+      modal.style.display = "none";
+      });
+      async function updateChanges(data, url, msg) {
+      await fetch(url,
+             {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                method: "POST",
+                body: JSON.stringify({ dataIns: data }),
+                mode : "cors",
+                credentials : "include"
+            })
+            .then(function (response) {
+            })
+            .catch(function (error) {
+                throw error
+            })
+    }
+      </script>
+    </body>
+    </html>
+    
+</body>
+</html>
